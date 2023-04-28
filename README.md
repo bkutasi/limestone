@@ -1,17 +1,15 @@
 # Limestone: An interactive chatbot
-Limestone is a personalised and a highly customisable Telegram bot that allows you to interact with a LLM instance.
 <div align=center>
 <img src="assets/banner.png" width = "640" alt="zoo" align=center />
+
+⚡Limestone is a personalized and highly customizable Telegram bot that allows you to interact with a local instance of LLM, a powerful natural language processing system. With Limestone, you can chat, search, generate content, and more, all within the Telegram app.⚡
 </div>
-
-
-⚡Telegram bot that allows you to interact with a LLM instance anywhere in the world through the feature rich telegram bot interface.⚡
 
 ## ✨ Latest News
 - [04/28/2023]: Initial release with instruction functionality. 
 
 ## 🤔 Motivation
-- Everybody needs an easily accessible way to interact with GPT-like LMMs. Additionally the project provides way for anyone to run their LLM privately and securely. By using telegram as a frontend, we can ensure that the messaging is secure and the user's data is not being leaked. 
+- Everybody needs an easily accessible way to interact with GPT-like LMMs. Additionally, the project provides way for anyone to run their LLM privately and securely. By using telegram as a frontend, we can ensure that the messaging is secure and the user's data is not being leaked. 
 
 > Personalised chatbots are currently spreading but fear and uncertainty stops them from being a truly personalized solution for the masses.
 
@@ -45,7 +43,7 @@ Every communication is printed to the console for now. Nothing is encrypted on t
 
 <details><summary><b>The models recommended here have been tested and suitable for usage with limitations.</b></summary>
 
-> The models use the excellent LlaMa as base model fine-tuned with **instructions**. GPT4-X-Alpaca has a low level of filtering and it has tuned with GPT4, while WizardLM has excellent performance and low memory footprint while outperforming ChatGPT(chatgpt-3.5-turbo) on certain domains by using [Evol-Instruct](https://github.com/nlpxucan/evol-instruct). The rationale behind using these models is that *the **instruction** data helps to tame language  models to adhere to human instructions and fulfill their information requirements*.
+> The models use the excellent LlaMa as base model fine-tuned with **instructions**. GPT4-X-Alpaca has a low level of filtering and it has tuned with GPT4, while WizardLM has excellent performance and low memory footprint while outperforming ChatGPT(chatgpt-3.5-turbo) on certain domains by using [Evol-Instruct](https://github.com/nlpxucan/evol-instruct). The rationale behind using these models is that the **instruction** data helps to tame language models to adhere to human instructions and fulfill their information requirements.
 </details>
 
 
@@ -64,7 +62,7 @@ Docker and maybe orchestration coming soon.
 
 ### Launch ooba's text generation webui, after editing the launch parameters in webui.py
 ```bash
-python server.py --chat --model wizardLM-7B-GPTQ-4bit-128g --auto-devices --wbits 4 --model_type=llama --api")
+python server.py --chat --model wizardLM-7B-GPTQ-4bit-128g --auto-devices --wbits 4 --model_type=llama --api
 ```
 
 ### Launch the chat server
@@ -74,23 +72,24 @@ python server.py
 
 ### Talk with the bot on telegram
 
-Now, you have your custom chat bot!
+Now, you have your custom chatbot!
 
-# Roadmap
-## Short Term
+## 🛣️ Roadmap
+### 🎯 Short Term
  - 🚧 Code cleanup and refactoring.
- - 🚧 Save the conversation history to a database.
+ - 🚧 Save the conversation history to a database per user.
+ - 🚧 Implement [long-term-memory](https://github.com/wawawario2/long_term_memory) for each user.
  - 🚧 Investigate more models.
- - 🚧 Increase inference and processing speed, eliminate bottleneck and bugs.
+ - 🚧 Increase inference and processing speed, eliminate bottlenecks and bugs.
  - ❌ Implement robust testing and CI/CD.
  - ❌ Allow users to get whitelisted.
 
-## Medium Term
+### 📈 Medium Term
  - ❌ Integrate with other APIs to allow for document retrieval, search and others.
- - ❌ Integrate Langchain though ooba extension.
+ - ❌ Integrate [Langchain](https://github.com/hwchase17/langchain#quick-install), [docs](https://python.langchain.com/en/latest/use_cases/question_answering.html).
  - ❌ Vector database for faster search.
 
-## Long Term
+### 🌟Long Term
  - ❌ Allow anyone to engage with the bot freely for a limited amount of tokens.
   - ❌ Commercialize the project.
 
