@@ -1,19 +1,23 @@
 # Limestone: An interactive chatbot
 <div align=center>
-<img src="assets/banner.png" width = "640" alt="zoo" align=center />
+<img src="assets/banner.png" width = "640" alt="banner" align=center />
 
 ⚡Limestone is a personalized and highly customizable Telegram bot that allows you to interact with a local instance of LLM, a powerful natural language processing system. With Limestone, you can chat, search, generate content, and more, all within the Telegram app.⚡
 </div>
 
 ## ✨ Latest News
-- [04/28/2023]: Initial release with instruction functionality. 
+
+- [05/11/2023]: Streaming is added! New models, chatting works.
+- [04/28/2023]: Initial release with instruction functionality.
 
 ## 🤔 Motivation
+
 - Everybody needs an easily accessible way to interact with GPT-like LMMs. Additionally, the project provides way for anyone to run their LLM privately and securely. By using telegram as a frontend, we can ensure that the messaging is secure and the user's data is not being leaked. 
 
-> Personalised chatbots are currently spreading but fear and uncertainty stops them from being a truly personalized solution for the masses.
+- Personalized chatbots are currently spreading but fear and uncertainty stops them from being a truly personalized solution for the masses.
 
 ## 🎬 Get started
+
 ### Install
 
 Get oobabooga/text-generation-webui 1 click installer from [here](https://github.com/oobabooga/text-generation-webui#one-click-installers). And leunch it. Follow the instructions on the repo.
@@ -38,9 +42,10 @@ Every communication is printed to the console for now. Nothing is encrypted on t
 ### Overview of tested models
 | Model                         | Backbone |  #Params | Tested               | Open-source data | Claimed language | Post-training (instruction) | VRAM required | Release date |
 |-------------------------------|----------|---------:|------------------:|-----------------:|-----------------:|----------------------------:|-----------------------------:|-------------:|
-| [GPT4-X-Alpaca](https://huggingface.co/anon8231489123/gpt4-x-alpaca-13b-native-4bit-128g)                 | LLaMA    |      13B |                 ✅ |                ✅ |               en |                     52K, en |                            8 Gb |     04/25/23 |
-| [WizardLM](https://github.com/nlpxucan/WizardLM)                      | LLaMA    |       7B |                 ✅ |                ✅ |               en |                     70K, en |                            12 Gb |     04/01/23 |
-
+| [GPT4-X-Alpaca](https://huggingface.co/anon8231489123/gpt4-x-alpaca-13b-native-4bit-128g)      | LLaMA    |      13B |                 ✅ |      ✅ |     en |           52K, en | 12 Gb |     04/25/23 |
+| [WizardLM](https://github.com/nlpxucan/WizardLM)                          | LLaMA    |       7B |             ✅ |            ✅ |         en |   70K, en,  |                       8 Gb |     04/01/23 |
+| [WizardLM-uncensored](https://huggingface.co/ehartford/WizardLM-7B-Uncensored)       | LLaMA    |       7B |                 ✅ |            ✅ |         en |   70K-decen, en |    8 Gb |     05/04/23 |
+| [WizardVicunaLM](https://huggingface.co/junelee/wizard-vicuna-13b)        | LLaMA    |       13B |                 ✅ |     ✅ |         en |   70K+conv, en |                    12 Gb |     05/04/23 |
 <details><summary><b>The models recommended here have been tested and suitable for usage with limitations.</b></summary>
 
 > The models use the excellent LlaMa as base model fine-tuned with **instructions**. GPT4-X-Alpaca has a low level of filtering and it has tuned with GPT4, while WizardLM has excellent performance and low memory footprint while outperforming ChatGPT(chatgpt-3.5-turbo) on certain domains by using [Evol-Instruct](https://github.com/nlpxucan/evol-instruct). The rationale behind using these models is that the **instruction** data helps to tame language models to adhere to human instructions and fulfill their information requirements.
@@ -54,28 +59,32 @@ One shot instruction performance is the same as the base model. Currently, no me
 
 ## 👾 Quantization
 
-Currently, the GPTQ 4bit quantizations are recommended. GGML is viable if you have an excellent CPU or mac, but it's generally slower than with a recent GPU.
+Currently, the GPTQ 4bit quantization are recommended. GGML is viable if you have an excellent CPU or mac, but it's generally slower than with a recent GPU. If you search for a model on Huggingface and insert -4bit or -GPTQ you will find compatible versions.
 
 ## 🏭 Deployment
 
 Docker and maybe orchestration coming soon.
 
-### Launch ooba's text generation webui, after editing the launch parameters in webui.py
+### Launch ooba's text generation webui, after editing the launch parameters in webui.py line 146:
 ```bash
-python server.py --chat --model wizardLM-7B-GPTQ-4bit-128g --auto-devices --wbits 4 --model_type=llama --api
+python server.py --chat --model WizardLM-13B-uncensored-4bit-128g --auto-devices --wbits 4 --groupsize 128 --model_type=llama --gpu-memory 9 --api
 ```
 
 ### Launch the chat server
 ```bash
 python server.py
 ```
-
+Go into the models section and check if the model is properly loaded.
 ### Talk with the bot on telegram
 
 Now, you have your custom chatbot!
 
 ## 🛣️ Roadmap
+🚧 - work in progress
+❌ - not yet started
 ### 🎯 Short Term
+ - 🚧 Multiple personalities
+ - 🚧 Pseudo streaming.
  - 🚧 Code cleanup and refactoring.
  - 🚧 Save the conversation history to a database per user.
  - 🚧 Implement [long-term-memory](https://github.com/wawawario2/long_term_memory) for each user.
@@ -114,3 +123,13 @@ All the models one can find on the internet have limitations. The common current
 
 - Misunderstandings due to context: the models may misunderstand the context of a conversation, leading to
   misinterpretation and incorrect responses.
+
+## Acknowledgements
+
+- LLaMA: https://github.com/facebookresearch/llama
+- Self-instruct: https://github.com/yizhongw/self-instruct
+- Alpaca: https://github.com/tatsu-lab/stanford_alpaca
+- Vicuna: https://github.com/lm-sys/FastChat
+- Oobabooga: https://github.com/oobabooga
+- Other upcoming models
+- You, the community
