@@ -1,0 +1,13 @@
+__pycache__/credentials.cpython-39.pyc
+__pycache__/credentials.cpython-311.pyc
+__pycache__/mdconvert.cpython-311.pyc
+__pycache__/server.cpython-39.pyc
+bot/__pycache__/config.cpython-311.pyc
+bot/__pycache__/credentials.cpython-311.pyc
+bot/__pycache__/mdconvert.cpython-311.pyc
+bot/__pycache__/config.cpython-310.pyc
+.gitignore
+bot/__pycache__/mdconvert.cpython-310.pyc
+.gitignore
+bot/__pycache__/streaming.cpython-310.pyc
+config/config.yml

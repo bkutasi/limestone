@@ -1,50 +1,57 @@
 import json
 import sys
-import websockets
-import requests
 import logging
-from functools import wraps
-from typing import Final
-from telegram import Update, helpers
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from telegram.constants import ParseMode, ChatAction
+import traceback
+import html
+from websockets.client import connect
+from telegram import (
+    Update
+)
 
-import credentials
-import mdconvert
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler, 
+    MessageHandler, 
+    filters, 
+    ContextTypes,
+)
 
-print('Starting up bot...')
+from telegram.constants import (
+    ParseMode, 
+)
 
-TOKEN: Final = credentials.TOKEN
-BOT_USERNAME: Final = credentials.BOT_USERNAME
-API_URL: Final = credentials.API_URL
-HOST: Final = credentials.HOST
-URI: Final = credentials.URI
+from bot.config import (
+    URI,
+    BOT_USERNAME,
+    DEV_ID,
+    TOKEN,
+    USERS,
+    instruction_templates
+)
+import bot.mdconvert as mdconvert
+import bot.streamer
+
+logger = logging.getLogger(__name__)
 chat_responses = {} # initialize the dictionary for chat responses
 debug = False # set to True to enable debugging
 database_debug = False
 codeblock_debug = False
 
-# Declaration of the instruction style
-instruction_base = { "Alpaca" : 
-                        [
-                        "Below is an instruction that describes a task. Write a response that appropriately completes the request.", 
-                        "\n### Instruction:\n",
-                        "\n### Response:\n"
-                        ],
-                    "VicunaV2" : []}
-
 # Lets us use the /start command
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message:
-        text = """```bash this is a bash codeblock``` you have pressed the `/start` command. You can now type anything and I will do my best to respond!"""
-        print(mdconvert.escape(text),"\n", mdconvert.has_open_code_block(text), "\n", mdconvert.has_open_inline_code(text))
+        text = """```bash this is a bash codeblock`` you have pressed the `/start` command. You can now type anything and I will do my best to respond!"""
+        print(text,"\n", mdconvert.has_open_code_block(text), "\n", mdconvert.has_open_inline_code(text))
         await update.message.reply_text(mdconvert.escape(text), parse_mode=ParseMode.MARKDOWN_V2)
 
 
 # Lets us use the /help command
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message:
-        await update.message.reply_text('Try typing anything and I will do my best to respond!')
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message:    
+        await update.message.reply_text(
+            text= f"Your chat id is <code>{update.message.chat.id}</code>.", 
+            parse_mode=ParseMode.HTML
+        )
 
 
 # Lets us use the /custom command
@@ -108,10 +115,10 @@ async def stream_text(context: str):
         'truncation_length': 2048,
         'ban_eos_token': False,
         'skip_special_tokens': False,
-        'stopping_strings': []
+        'stopping_strings': ["</s>"]
     }
 
-    async with websockets.connect(URI) as websocket:
+    async with connect(URI) as websocket:
         await websocket.send(json.dumps(request))
 
         while True:
@@ -125,23 +132,9 @@ async def stream_text(context: str):
                     yield None
                     return
 
-# Function to handle typing status, placeholder message interferes with bot typing
-def send_action(action):
-    """Sends `action` while processing func command."""
-
-    def decorator(func):
-        @wraps(func)
-        async def command_func(update, context, *args, **kwargs):
-            await context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=action)
-            return await func(update, context,  *args, **kwargs)
-        return command_func
-    
-    return decorator
-
-@send_action(ChatAction.TYPING)
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Check if the message is None
-    if update.message is not None:
+    if update.message:
         
         # Send placeholder message while waiting for the response
         placeholder_message = await update.message.reply_text("...")
@@ -161,12 +154,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Save the responses to the database
         if chat_id not in chat_responses:
-            message = instruction_base['Alpaca'][0]+instruction_base['Alpaca'][1]+ message.replace(BOT_USERNAME, "", 1).lstrip() + instruction_base['Alpaca'][2]
-        else:
-            message = chat_responses[chat_id][-2048:] + instruction_base['Alpaca'][1] + message.replace(BOT_USERNAME, "", 1).lstrip() + instruction_base['Alpaca'][2]
+            prompt = convo = instruction_templates["vicunav1_1"]["prompt_start"]+instruction_templates["vicunav1_1"]["instruction"]+ message.replace(BOT_USERNAME, "", 1).lstrip() + instruction_templates["vicunav1_1"]["response"]
+        else: 
+            prompt = chat_responses[chat_id][-8192:] + instruction_templates["vicunav1_1"]["instruction"] + message.replace(BOT_USERNAME, "", 1).lstrip() + instruction_templates["vicunav1_1"]["response"]
+            convo = instruction_templates["vicunav1_1"]["instruction"] + message.replace(BOT_USERNAME, "", 1).lstrip() + instruction_templates["vicunav1_1"]["response"]
 
         # Make a generator for the response
-        response_generator = stream_text(message)
+        response_generator = stream_text(prompt)
 
         # Make a string placeholder for the final response
         response_string = ""
@@ -203,13 +197,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                             message_id=placeholder_message.message_id, parse_mode=ParseMode.MARKDOWN_V2)
 
         # First check if the chat_id is already in the database, and save the response
-        chat_responses[chat_id] = chat_responses.setdefault(chat_id, '') + message + response_string
+        chat_responses[chat_id] = chat_responses.setdefault(chat_id, '') + convo + response_string
 
         # Print the database to the console for debugging if enabled
-        if database_debug: print(chat_responses[chat_id])
+        if database_debug: print(chat_responses[chat_id]+"\n\n")
         
 
-@send_action(ChatAction.TYPING)
 async def handle_edited_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.edited_message is not None:
         chat_id = update.edited_message.chat.id
@@ -217,29 +210,53 @@ async def handle_edited_message(update: Update, context: ContextTypes.DEFAULT_TY
         print(f'User ({chat_id}) in an edited message: "{edited_message}"')
         if edited_message is None:
             return
-        response = generate_text(edited_message)
+        response = "Message edited, currently I dont support this feature."
         print('Bot:', response)
         if update.edited_message:
             await update.edited_message.reply_text("I saw that you edited a message! Here is my new response:\n" + response)
 
 # Log errors
-async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Log the error message
-    logging.exception(context.error)
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Log the error and send a telegram message to notify the developer."""
+    # Log the error before we do anything else, so we can see it even if something breaks.
+    logger.error("Exception while handling an update:", exc_info=context.error)
+    
+    # traceback.format_exception returns the usual python message about an exception, but as a
+    # list of strings rather than a single string, so we have to join them together.
+    tb_list = traceback.format_exception(None, context.error, None)
+    tb_string = "".join(tb_list)
 
-    # Send an error message to the user
-    try:
-        if update.message:
-            await update.message.reply_text('An error occurred. Please try again later.')
-        elif update.edited_message:
-            await update.edited_message.reply_text('An error occurred. Please try again later.')
-    except Exception as e:
-        logging.error(f'Error sending error message: {str(e)}')
+    # Build the message with some markup and additional information about what happened.
+    # You might need to add some logic to deal with messages longer than the 4096 character limit.
+    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    message = (
+        f"An exception was raised while handling an update\n"
+        f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
+        "</pre>\n\n"
+        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>{html.escape(tb_string)}</pre>"
+    )
 
+    # Finally, send the message, if needed. Enable to get a message in telegram when something crashes
+    await context.bot.send_message(chat_id=DEV_ID, text=message, parse_mode=ParseMode.HTML)
 
-# Run the program
-if __name__ == '__main__':
-    app = Application.builder().token(TOKEN).build()
+# Bot running logic
+def run_bot() -> None:
+    print('Starting up bot...')
+    app = (
+        ApplicationBuilder()
+        .token(TOKEN)
+        .concurrent_updates(True)
+        .build()
+    )
+
+    # add handlers
+    user_filter = filters.ALL
+    if len(USERS) > 0:
+        usernames = [x for x in USERS if isinstance(x, str)]
+        user_ids = [x for x in USERS if isinstance(x, int)]
+        user_filter = filters.User(username=usernames) | filters.User(user_id=user_ids)
 
     # Commands
     app.add_handler(CommandHandler('start', start_command))
@@ -252,10 +269,14 @@ if __name__ == '__main__':
 
     # Edited messages
     app.add_handler(MessageHandler(filters.UpdateType.EDITED_MESSAGE, handle_edited_message))
-    
-    # Log all errors
-    app.add_error_handler(error)
 
-    print('Polling...')
-    # Run the bot
-    app.run_polling(poll_interval=1)
+    # Error handling
+    app.add_error_handler(error_handler)
+
+    # start the bot
+    print('Pooling...')
+    app.run_polling()
+
+# Run the program
+if __name__ == '__main__':
+    run_bot()

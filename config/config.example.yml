@@ -1,0 +1,9 @@
+backend: "exllama"
+telegram_token: ""
+bot_username: ""
+developer_id: 0
+#uri: "ws://localhost:5005/api/v1/stream"
+uri: "http://localhost:5005/generate"
+allowed_telegram_usernames: []  # if empty, the bot is available to anyone. pass a username string to allow it and/or user ids as integers
+new_dialog_timeout: 600  # new dialog starts after timeout (in seconds), not used yet
+enable_message_streaming: true  # if set, messages will be streamedi in chunks, currently only streaming is supported
