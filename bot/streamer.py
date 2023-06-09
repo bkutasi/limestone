@@ -1,15 +1,16 @@
-import asyncio
 import json
 from typing import AsyncGenerator, Generator
-
 import requests
 import websockets
 
 
-class Streamer:
-    def __init__(self, backend: str, 
-                 URI: str, 
-                 max_new_tokens: str = None) -> None:
+class Stream:
+    def __init__(
+        self,
+        backend: str = "exllama",
+        URI: str = "http://localhost:5005/generate",
+        max_new_tokens: str = 1024,
+    ) -> None:
         """
         Initializes a new instance of the Streamer class.
 
@@ -27,9 +28,7 @@ class Streamer:
         :param prompt: The prompt to use for generating text.
         :return: A generator that yields the generated text.
         """
-        request = {
-            'prompt': prompt
-        }
+        request = {"prompt": prompt, "max_new_tokens": self.max_new_tokens}
         r = requests.post(self.URI, json=request, stream=True)
 
         if r.status_code == 200:
@@ -46,9 +45,7 @@ class Streamer:
         :param prompt: The prompt to use for generating text.
         :return: An async generator that yields the generated text.
         """
-        request = {
-            'prompt': prompt
-        }
+        request = {"prompt": prompt}
 
         async with websockets.connect(self.URI) as websocket:
             await websocket.send(json.dumps(request))
@@ -57,10 +54,10 @@ class Streamer:
                 token = await websocket.recv()
                 token = json.loads(token)
 
-                event = token.get('event')
-                if event == 'text_stream':
-                    yield token['text']
-                elif event == 'stream_end':
+                event = token.get("event")
+                if event == "text_stream":
+                    yield token["text"]
+                elif event == "stream_end":
                     yield None
                     return
 
@@ -71,24 +68,14 @@ class Streamer:
         :param prompt: The prompt to use for generating text.
         """
         try:
-            if self.backend == 'exllama':
+            if self.backend == "exllama":
                 generator = self.exllama(prompt)
                 for response in generator:
-                    print(response, end='', flush=True)
-            elif self.backend == 'ooba':
+                    print(response, end="", flush=True)
+            elif self.backend == "ooba":
                 generator = self.ooba(prompt)
                 async for response in generator:
-                    print(response, end='', flush=True)
+                    print(response, end="", flush=True)
         except Exception as e:
             # Handle any exceptions that might occur
             print(f"An error occurred: {e}")
-
-
-
-if __name__ == '__main__':
-    exllama_streamer = Streamer(
-        'exllama', 'http://localhost:5005/generate', max_new_tokens='2048')
-    ooba_streamer = Streamer(
-        'ooba', 'ws://localhost:5005/api/v1/stream', max_new_tokens='2048')
-
-    asyncio.run(exllama_streamer.printer())

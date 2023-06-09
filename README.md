@@ -10,7 +10,7 @@
 
 ## ✨ Latest News
 
-- [06/07/2023]: Huge update!
+- [06/09/2023]: Huge update! OOP refactoring and EXLLaMa backend!
 
 <details>
 
@@ -22,7 +22,7 @@
 
 ## 🤔 Motivation
 
-- Everybody needs an easily accessible way to interact with GPT-based LMMs. Additionally, the project provides way for anyone to run their LLM privately and securely. By using telegram as a frontend, we can ensure that the messaging is secure and the user's data is not being leaked. 
+- Everybody needs an easily accessible way to interact with GPT-based LMMs. Additionally, the project provides way for anyone to run their LLM privately and securely. By using telegram as a frontend, we can ensure that the messaging is secure and the user's data is not being leaked.
 
 - Personalized chatbots are currently spreading but fear and uncertainty stops them from being a truly personalized solution for the masses.
 
@@ -63,12 +63,9 @@ Nothing is encrypted on the server side. Do not use this in production without p
 
 <b>The models recommended here have been tested and suitable for usage with limitations.</b>
 
-
-
 ## 🧐 Evaluation and Benchmark
 
 [Open LLM leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)
-
 
 ## 👾 Quantization
 
@@ -78,7 +75,7 @@ Currently, the GPTQ 4bit quantization is recommended. GGML is viable if you have
 
 Docker and maybe orchestration coming soon.
 
-### Launch ooba's text generation webui, after editing the launch parameters in webui.py line 146:
+### Launch ooba's text generation webui, after editing the launch parameters in webui.py line 146
 
 ```bash
 python server.py --chat --model WizardLM-13B-uncensored-4bit-128g --auto-devices --wbits 4 --groupsize 128 --model_type=llama --gpu-memory 9 --api
@@ -152,10 +149,10 @@ All the models one can find on the internet have limitations. The common current
 
 ## Acknowledgements
 
-- LLaMA: https://github.com/facebookresearch/llama
-- Self-instruct: https://github.com/yizhongw/self-instruct
-- Alpaca: https://github.com/tatsu-lab/stanford_alpaca
-- Vicuna: https://github.com/lm-sys/FastChat
-- Oobabooga: https://github.com/oobabooga
+- LLaMA: <https://github.com/facebookresearch/llama>
+- Self-instruct: <https://github.com/yizhongw/self-instruct>
+- Alpaca: <https://github.com/tatsu-lab/stanford_alpaca>
+- Vicuna: <https://github.com/lm-sys/FastChat>
+- Oobabooga: <https://github.com/oobabooga>
 - Other upcoming models
 - You, the community
