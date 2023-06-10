@@ -77,7 +77,8 @@ class MyMessageHandler:
 
         # Iterate through the generator and send the response
         async for response in response_generator:
-            response_cache += response
+            # If the response is a string, add it to the cache
+            response_cache += response if isinstance(response, str) else ""
 
             # Cache the response
             response_string += response_cache
@@ -181,5 +182,11 @@ class StreamGenerator:
 
     async def generate(self, prompt: str):
         stream = Stream(self.backend, self.uri, self.max_new_tokens)
-        for token in stream.exllama(prompt):
-            yield token
+
+        if self.backend == "ooba":
+            async for token in stream.ooba(prompt):
+                yield token
+
+        elif self.backend == "exllama":
+            for token in stream.exllama(prompt):
+                yield token

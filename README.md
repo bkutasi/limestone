@@ -30,7 +30,7 @@
 
 ### Install
 
-Get oobabooga/text-generation-webui 1 click installer from [here](https://github.com/oobabooga/text-generation-webui#one-click-installers). And leunch it. Follow the instructions on the repo.
+Get EXLLaMa 1 click installer from [here](https://github.com/oobabooga/text-generation-webui#one-click-installers). And launch it. Follow the instructions on the repo.
 
 Download a model to test from [here](https://huggingface.co/models?filter=llm) download all the files and put it into a folder in `models`. The recommended models are [WizardLM](https://huggingface.co/TheBloke/wizardLM-7B-GPTQ) and [GTP4-X-Alpaca](https://huggingface.co/anon8231489123/gpt4-x-alpaca-13b-native-4bit-128g).
 

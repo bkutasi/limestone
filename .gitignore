@@ -25,3 +25,8 @@ bot/helpers/__pycache__/debug_helper.cpython-310.pyc
 bot/helpers/__pycache__/error_helper.cpython-310.pyc
 bot/helpers/__pycache__/formatting_helper.cpython-310.pyc
 bot/helpers/__pycache__/message_helper.cpython-310.pyc
+tests/connection_test.py
+tests/__pycache__/connection_test.cpython-310.pyc
+.gitignore
+.gitignore
+tests/__pycache__/__init__.cpython-310.pyc

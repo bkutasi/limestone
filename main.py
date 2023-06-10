@@ -9,6 +9,7 @@ from bot.config import (
     instruction_templates,
 )
 
+
 # Run the program
 if __name__ == "__main__":
     chatbot = Bot(
@@ -19,7 +20,7 @@ if __name__ == "__main__":
         dev_id=DEV_ID,
         users=USERS,
         instruction_templates=instruction_templates,
-        debug=False,
+        debug=True,
         database_debug=False,
         codeblock_debug=False,
     )

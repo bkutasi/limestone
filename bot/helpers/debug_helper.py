@@ -50,7 +50,7 @@ class DebugHelper:
         """
         if debug:
             DebugHelper.log_time(debug)
-            print(f'Sent ({chat_id}) in {message_type}: "{response}"')
+            print(f'Sent ({chat_id}) in {message_type}: "{response[1:]}"')
 
     @staticmethod
     def log_chat_database(

@@ -7,9 +7,9 @@ import websockets
 class Stream:
     def __init__(
         self,
-        backend: str = "exllama",
-        URI: str = "http://localhost:5005/generate",
-        max_new_tokens: str = 1024,
+        backend: str,
+        URI: str,
+        max_new_tokens: str,
     ) -> None:
         """
         Initializes a new instance of the Streamer class.
@@ -52,13 +52,14 @@ class Stream:
 
             while True:
                 token = await websocket.recv()
+
                 token = json.loads(token)
 
                 event = token.get("event")
                 if event == "text_stream":
                     yield token["text"]
                 elif event == "stream_end":
-                    yield None
+                    yield ""
                     return
 
     async def printer(self, prompt: str = "This is an instruction:") -> None:
@@ -75,7 +76,7 @@ class Stream:
             elif self.backend == "ooba":
                 generator = self.ooba(prompt)
                 async for response in generator:
-                    print(response, end="", flush=True)
+                    await print(response, end="", flush=True)
         except Exception as e:
             # Handle any exceptions that might occur
             print(f"An error occurred: {e}")
