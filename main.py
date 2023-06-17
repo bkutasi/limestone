@@ -21,7 +21,7 @@ if __name__ == "__main__":
         users=USERS,
         instruction_templates=instruction_templates,
         max_new_tokens=2048,
-        debug=False,
+        debug=True,
         database_debug=False,
         codeblock_debug=False,
     )

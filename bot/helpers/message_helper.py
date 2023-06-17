@@ -1,10 +1,13 @@
+from telegram import Update, Message
+from typing import Tuple
+
 class MessageHelper:
     """
     A helper class for sending basic messages and actions in a chat.
     """
 
     @staticmethod
-    async def send_placeholder_message(update):
+    async def send_placeholder_message(update: Update) -> Message:
         """
         Sends a placeholder message to the chat.
 
@@ -15,7 +18,7 @@ class MessageHelper:
         return placeholder_message
 
     @staticmethod
-    async def send_typing_action(update):
+    async def send_typing_action(update: Update) -> None:
         """
         Sends a typing action to the chat.
 
@@ -24,7 +27,7 @@ class MessageHelper:
         await update.message.chat.send_action(action="typing")
 
     @staticmethod
-    def get_message_info(update):
+    def get_message_info(update: Update) -> Tuple[str, int, str]:
         """
         Gets the message type, chat ID, and message text from an update object.
 

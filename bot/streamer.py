@@ -46,7 +46,13 @@ class Stream:
         :return: An async generator that yields the generated text.
         """
         request = {"prompt": prompt,
-                   "max_new_tokens": self.max_new_tokens}
+                   "max_new_tokens": self.max_new_tokens,
+                    "repetition_penalty": 1.07,
+                    "temperature": 1.53,
+                    "top_a": 0.04,
+                    "top_k": 33,
+                    "top_p": 0.64
+}
 
         async with websockets.connect(self.URI) as websocket:
             await websocket.send(json.dumps(request))

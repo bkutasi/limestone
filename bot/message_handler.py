@@ -2,7 +2,7 @@ from typing import AsyncGenerator, Generator, Tuple
 import time
 import logging
 from typing import Dict
-from telegram import Update
+from telegram import Update, Message
 from telegram.ext import (
     ContextTypes,
 )
@@ -40,9 +40,6 @@ class MyMessageHandler:
         self.chat_responses: Dict[int, str] = {}
         self.logger = logging.getLogger(__name__)
 
-    def get_chat_responses(self):
-        return self.chat_responses
-
     def get_dev_id(self):
         return self.DEV_ID
 
@@ -51,7 +48,7 @@ class MyMessageHandler:
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Send placeholder message while waiting for the response
-        placeholder_message = await MessageHelper.send_placeholder_message(update)
+        last_message = await MessageHelper.send_placeholder_message(update)
 
         # Send a typing action while waiting for the response
         await MessageHelper.send_typing_action(update)
@@ -77,28 +74,40 @@ class MyMessageHandler:
 
         # Iterate through the generator and send the response
         async for response in response_generator:
+            response_cache: str = ""
             # If the response is a string, add it to the cache
-            response_cache += response if isinstance(response, str) else ""
+            response_cache += response # if isinstance(response, str) else ""
 
             # Cache the response
             response_string += response_cache
-            response_cache = ""
 
             # If not enought time elapsed, continue caching
             if time.time() - last_update_time > 0.5:
-                await self._edit_response_text(
-                    context, response_string, placeholder_message
+                last_message = await self._edit_response_text(
+                    context, response_string, last_message
                 )
 
                 # Update the last update time
                 last_update_time = time.time()
 
-        # if there is still something in the cache, send it
-        if len(response_string) > 0:
+        """# if there is still something in the cache, send it
+        if len(response_cache) > 0:
+            response_string += response_cache
+            print(response_cache)
             await self._edit_response_text(
                 context, response_string, placeholder_message
             )
+        else:
+            print("no cache")"""
 
+        # edit the message is response string is not identical to the already sent message
+        # by getting the last message sent by the bot
+
+        if last_message.text != response_string:
+            await self._edit_response_text(
+                context, response_string, last_message
+            )
+       
         DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
 
         # First check if the chat_id is already in the database, and save the response
@@ -109,7 +118,7 @@ class MyMessageHandler:
 
     async def _edit_response_text(
         self, context: str, response_string: str, placeholder_message
-    ):
+    ) -> Message:
         if TextFormatter.has_open_code_block(response_string):
             text = TextFormatter.escape(response_string) + "```"
         elif TextFormatter.has_open_inline_code(response_string):
@@ -117,12 +126,13 @@ class MyMessageHandler:
         else:
             text = TextFormatter.escape(response_string)
 
-        await context.bot.edit_message_text(
+        return await context.bot.edit_message_text(
             text,
             chat_id=placeholder_message.chat_id,
             message_id=placeholder_message.message_id,
             parse_mode=ParseMode.MARKDOWN_V2,
         )
+
 
     async def send_placeholder_message(self, update):
         placeholder_message = await update.message.reply_text("...")
