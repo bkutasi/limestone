@@ -94,7 +94,7 @@ class MyMessageHandler:
                 last_update_time = time.time()
 
         # if there is still something in the cache, send it
-        if response_string:
+        if len(response_string) > 0:
             await self._edit_response_text(
                 context, response_string, placeholder_message
             )

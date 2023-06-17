@@ -30,3 +30,6 @@ tests/__pycache__/connection_test.cpython-310.pyc
 .gitignore
 .gitignore
 tests/__pycache__/__init__.cpython-310.pyc
+__pycache__/__init__.cpython-310.pyc
+tests/__pycache__/connection_test.cpython-310-pytest-7.3.1.pyc
+tests/__pycache__/stream_test.cpython-310.pyc

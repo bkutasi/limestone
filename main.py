@@ -20,7 +20,8 @@ if __name__ == "__main__":
         dev_id=DEV_ID,
         users=USERS,
         instruction_templates=instruction_templates,
-        debug=True,
+        max_new_tokens=2048,
+        debug=False,
         database_debug=False,
         codeblock_debug=False,
     )

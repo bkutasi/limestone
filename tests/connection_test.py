@@ -1,111 +1,77 @@
+import asyncio
 import json
-import socket
 import time
 import websockets
 from unittest import IsolatedAsyncioTestCase
-import unittest
-
-from bot.streamer import Stream
+from urllib.request import Request, urlopen
 
 
-class ConnectionTest(IsolatedAsyncioTestCase):
-    """
-    A class for testing WebSocket and normal socket connections.
-    """
+class StreamingAPITest(IsolatedAsyncioTestCase):
+    """Test class for WebSocket Streaming connection."""
 
-    async def test_websocket_connection(self):
+    async def test_stream_connection(self):
+        """Test if the WebSocket connection is active and log the time."""
         URI = "ws://localhost:5005/api/v1/stream"
 
+        start_time = time.time()
         try:
             async with websockets.connect(URI):
-                # If this line is reached, the connection was successful
                 print(f"WebSocket test: PASS. WebSocket connection to {URI} is active")
-        except ConnectionRefusedError:
-            self.fail(
-                f"WebSocket test: FAIL. WebSocket connection to {URI} was refused"
+                open_time = time.time() - start_time
+                print(
+                    f"Time taken to open WebSocket connection: {open_time:.6f} seconds"
+                )
+        except (ConnectionRefusedError, asyncio.TimeoutError) as e:
+            print(
+                f"WebSocket test: FAIL. WebSocket connection to {URI} \
+                    failed with exception: {e}"
             )
 
-    async def test_ooba(self):
-        backend = "ooba"
-        URI = "ws://localhost:5005/api/v1/stream"
-        max_new_tokens = "1"
-
-        stream = Stream(backend, URI, max_new_tokens)
-
-        assert isinstance(stream, Stream)
+        close_time = time.time() - start_time
+        print(f"Time taken to close WebSocket connection: {close_time:.6f} seconds")
 
 
-class OtherTests:
-    @staticmethod
-    async def check_websocket_connection(uri):
-        """
-        Check if a WebSocket connection to the specified URI is still active.
+class BlockingAPITest(IsolatedAsyncioTestCase):
+    """Test class for blocking API endpoints."""
 
-        This method sends some data to the server and waits for a response.
-        If a response is received, it indicates that the connection is still active.
-
-        :param uri: The URI of the WebSocket server to connect to.
-        """
-        async with websockets.connect(uri) as websocket:
-            start_time = time.time()
-            # Send some data to the server
-            await websocket.send(json.dumps({"prompt": "The rivers will flow and"}))
-
-            # Wait for a response from the server
-            response = await websocket.recv()
-            # Print the response
-
-            print(f"WebSocket test: PASS. WebSocket connection to {uri} is active")
-            end_time = time.time()
-            print(f"Coroutine took {end_time - start_time} seconds to run")
-            # Assert that a response was received from the server
-            assert response, f"No response received from WebSocket connection to {uri}"
-
-    @staticmethod
-    def check_socket_connection(host, port, path):
-        """
-        Check if a normal socket connection to the specified host and port is still active.
-
-        This method creates a new socket and connects to the server at the specified
-        host and port. It sends an HTTP GET request for the specified path and checks
-        if it receives a response. If a response is received, it indicates that the
-        connection is still active.
-
-        :param host: The hostname of the server to connect to.
-        :param port: The port number of the server to connect to.
-        :param path: The path of the resource to request from the server.
-        """
+    async def test_model_api(self):
+        """Test if the Model API connection is successful."""
+        url = "http://localhost:5000/api/v1/model"
+        req = Request(url, method="GET")
+        start_time = time.time()
         try:
-            # Create a new socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-            # Connect to the server
-            sock.connect((host, port))
-
-            # Send an HTTP GET request for the specified path
-            request = f"GET {path} HTTP/1.1\r\nHost: {host}\r\n\r\n"
-            sock.sendall(request.encode())
-
-            # Receive data from the server
-            data = sock.recv(1024)
-
-            print(f"Socket test: PASS. Socket connection to {host}:{port} is active")
+            with urlopen(req) as res:
+                self.assertEqual(res.status, 200)
+                assert isinstance(json.load(res), dict)
         except Exception as e:
-            print(f"Error checking socket connection to {host}:{port}: {e}")
+            print(
+                f"Model API test: FAIL. Connection to {url} failed with exception: {e}"
+            )
 
+        end_time = time.time()
+        print(f"Time taken for Model API test: {end_time - start_time:.6f} seconds")
 
-unittest.main()
-"""# Check the WebSocket connection
-websocket_uri = "ws://localhost:5005/api/v1/stream"
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
+    async def test_generate_api(self):
+        """Test if the Generate API connection is successful."""
+        url = "http://localhost:5000/api/v1/generate"
+        data = {
+            "prompt": "test prompt",
+            # Add any additional parameters here
+        }
+        req = Request(url, method="POST", data=json.dumps(data).encode("utf-8"))
+        req.add_header("Content-Type", "application/json")
+        start_time = time.time()
+        try:
+            with urlopen(req) as res:
+                self.assertEqual(res.status, 200)
+                self.assertEqual(res.getheader("Content-Type"), "application/json")
+                response_data = json.load(res)
+                assert isinstance(response_data, dict)
+        except Exception as e:
+            print(
+                f"Generate API test: FAIL. Connection to {url} \
+                    failed with exception: {e}"
+            )
 
-start_time = time.time()
-result = loop.run_until_complete(
-    ConnectionTest.check_websocket_connection(websocket_uri)
-)
-
-end_time = time.time()
-
-print(f"Event loop took {end_time - start_time} seconds to run")
-"""
+        end_time = time.time()
+        print(f"Time taken for Generate API test: {end_time - start_time:.6f} seconds")

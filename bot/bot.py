@@ -22,6 +22,7 @@ class Bot:
         bot_username: str,
         dev_id: str,
         instruction_templates: dict,
+        max_new_tokens: int,
         debug: bool,
         database_debug: bool,
         codeblock_debug: bool,
@@ -33,6 +34,7 @@ class Bot:
         self.bot_username = bot_username
         self.dev_id = dev_id
         self.instruction_templates = instruction_templates
+        self.max_new_tokens = max_new_tokens
         self.debug = debug
         self.database_debug = database_debug
         self.codeblock_debug = codeblock_debug
@@ -43,7 +45,7 @@ class Bot:
 
         # Message stream generation
         stream_generator = StreamGenerator(
-            backend=self.backend, uri=self.uri, max_new_tokens=1024
+            backend=self.backend, uri=self.uri, max_new_tokens=self.max_new_tokens
         )
 
         message_handling = MyMessageHandler(
