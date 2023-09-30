@@ -56,10 +56,8 @@ Nothing is encrypted on the server side. Do not use this in production without p
 
 | Model                         | Backbone |  #Params | Tested               | Open-source data | Claimed language | Post-training (instruction) | VRAM required | Release date |
 |-------------------------------|----------|---------:|------------------:|-----------------:|-----------------:|----------------------------:|-----------------------------:|-------------:|
-|[GPT4-X-Alpaca](https://huggingface.co/anon8231489123/gpt4-x-alpaca-13b-native-4bit-128g)   | LLaMA | 13B | ✅|✅| en |           52K | 12 Gb |     04/25/23 |
 |[WizardLM-Uncensored](https://huggingface.co/ehartford/WizardLM-7B-Uncensored)              | LLaMA | 7B |  ✅|✅| en |   [70K-uncen](https://huggingface.co/datasets/ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered/)|    8 Gb |     05/04/23 |
-|[WizardVicunaLM-Uncensored](https://huggingface.co/ehartford/Wizard-Vicuna-13B-Uncensored)  | LLaMA | 13B | ✅|✅| en |   [70K-uncen](https://huggingface.co/datasets/ehartford/WizardLM_alpaca_evol_instruct_70k_unfiltered/)| 12 Gb |     05/13/23 |
-|[Manticore-13b](https://huggingface.co/openaccess-ai-collective/manticore-13b)              | LLaMA | 13B | ✅|✅| en | see model link | 12 Gb |     05/19/23 |
+|[Speechless-13b](https://huggingface.co/TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-GPTQ)              | LLaMA2 | 13B | ✅|✅| en | see model link | 12 Gb |     09/01/23 |
 
 <b>The models recommended here have been tested and suitable for usage with limitations.</b>
 

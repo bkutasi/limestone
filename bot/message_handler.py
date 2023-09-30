@@ -76,7 +76,7 @@ class MyMessageHandler:
         async for response in response_generator:
             response_cache: str = ""
             # If the response is a string, add it to the cache
-            response_cache += response # if isinstance(response, str) else ""
+            response_cache += response  # if isinstance(response, str) else ""
 
             # Cache the response
             response_string += response_cache
@@ -90,24 +90,10 @@ class MyMessageHandler:
                 # Update the last update time
                 last_update_time = time.time()
 
-        """# if there is still something in the cache, send it
-        if len(response_cache) > 0:
-            response_string += response_cache
-            print(response_cache)
-            await self._edit_response_text(
-                context, response_string, placeholder_message
-            )
-        else:
-            print("no cache")"""
-
-        # edit the message is response string is not identical to the already sent message
-        # by getting the last message sent by the bot
-
+        # edit the message if its not identical to the already sent message
         if last_message.text != response_string:
-            await self._edit_response_text(
-                context, response_string, last_message
-            )
-       
+            await self._edit_response_text(context, response_string, last_message)
+
         DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
 
         # First check if the chat_id is already in the database, and save the response
@@ -132,7 +118,6 @@ class MyMessageHandler:
             message_id=placeholder_message.message_id,
             parse_mode=ParseMode.MARKDOWN_V2,
         )
-
 
     async def send_placeholder_message(self, update):
         placeholder_message = await update.message.reply_text("...")
