@@ -14,9 +14,9 @@ class ErrorHelper:
     async def error_handler(
         update: Update,
         context: str,
-        mesage_handler: MyMessageHandler,
+        message_handler: MyMessageHandler,
     ):
-        mesage_handler.logger.error(
+        message_handler.logger.error(
             "Exception while handling an update:", exc_info=context.error
         )
 
@@ -35,5 +35,5 @@ class ErrorHelper:
         )
 
         await context.bot.send_message(
-            chat_id=mesage_handler.DEV_ID, text=message, parse_mode=ParseMode.HTML
+            chat_id=message_handler.DEV_ID, text=message, parse_mode=ParseMode.HTML
         )
