@@ -6,6 +6,7 @@ from bot.config import (
     DEV_ID,
     TOKEN,
     USERS,
+    STREAMING,
     instruction_templates,
 )
 
@@ -20,10 +21,11 @@ if __name__ == "__main__":
         dev_id=DEV_ID,
         users=USERS,
         instruction_templates=instruction_templates,
-        max_new_tokens=2048,
+        max_new_tokens=256,
         debug=True,
         database_debug=False,
         codeblock_debug=False,
+        streaming=STREAMING,
     )
 
     chatbot.run()

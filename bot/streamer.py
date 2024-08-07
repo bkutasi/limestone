@@ -10,6 +10,7 @@ class Stream:
         backend: str,
         URI: str,
         max_new_tokens: str,
+        streaming: bool,
     ) -> None:
         """
         Initializes a new instance of the Streamer class.
@@ -20,6 +21,7 @@ class Stream:
         self.backend = backend
         self.URI = URI
         self.max_new_tokens = max_new_tokens
+        self.streaming = streaming
 
     def exllama(self, prompt: str) -> Generator[str, None, None]:
         """

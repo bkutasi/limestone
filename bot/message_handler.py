@@ -27,6 +27,7 @@ class MyMessageHandler:
         database_debug: bool = False,
         codeblock_debug: bool = False,
         stream_generator: Stream = None,
+        streaming: bool = False,
     ):
         self.debug = debug
         self.DEV_ID = DEV_ID
@@ -34,6 +35,7 @@ class MyMessageHandler:
         self.codeblock_debug = codeblock_debug
         self.stream_generator = stream_generator
         self.instruction_templates = instruction_templates
+        self.streaming = streaming
         self.BOT_USERNAME = BOT_USERNAME
 
         # Initialized variables that are not passed as arguments
@@ -65,6 +67,36 @@ class MyMessageHandler:
         # Make a generator for the response
         response_generator: AsyncGenerator or Generator = self.stream_text(prompt)
 
+        # Iterate through the generator and send the response
+        response_string: str = response_generator
+
+        DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
+
+        # First check if the chat_id is already in the database, and save the response
+        self.update_chat_responses(chat_id, convo + response_string)
+
+        # Print the database to the console for debugging if enabled
+        DebugHelper.log_chat_database(chat_id, self.chat_responses, self.database_debug)
+
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # Send placeholder message while waiting for the response
+        last_message = await MessageHelper.send_placeholder_message(update)
+
+        # Send a typing action while waiting for the response
+        await MessageHelper.send_typing_action(update)
+
+        # Get basic info of the incoming message
+        message_type, chat_id, message = MessageHelper.get_message_info(update)
+
+        # Print a log for debugging if debugging is enabled
+        DebugHelper.log_user_message(chat_id, message_type, message, self.debug)
+
+        # Save the user's message to the database
+        prompt, convo = self.save_responses(chat_id, message)
+
+        # Make a generator for the response
+        response_generator: AsyncGenerator or Generator = self.stream_text(prompt)
+
         # Make a string placeholder for the final response
         response_string: str = ""
         response_cache: str = ""
@@ -74,24 +106,28 @@ class MyMessageHandler:
 
         # Iterate through the generator and send the response
         async for response in response_generator:
-            response_cache: str = ""
-            # If the response is a string, add it to the cache
-            response_cache += response  # if isinstance(response, str) else ""
+            if not self.streaming:
+                response_string = response
+                await self._edit_response_text(context, response_string, last_message)
+            else:
+                response_cache: str = ""
+                # If the response is a string, add it to the cache
+                response_cache += response  # if isinstance(response, str) else ""
 
-            # Cache the response
-            response_string += response_cache
+                # Cache the response
+                response_string += response_cache
 
-            # If not enought time elapsed, continue caching
-            if time.time() - last_update_time > 0.5:
-                last_message = await self._edit_response_text(
-                    context, response_string, last_message
-                )
+                # If not enough time elapsed, continue caching
+                if time.time() - last_update_time > 0.5:
+                    last_message = await self._edit_response_text(
+                        context, response_string, last_message
+                    )
 
-                # Update the last update time
-                last_update_time = time.time()
+                    # Update the last update time
+                    last_update_time = time.time()
 
         # edit the message if its not identical to the already sent message
-        if last_message.text != response_string:
+        if last_message.text != response_string and self.streaming:
             await self._edit_response_text(context, response_string, last_message)
 
         DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
@@ -134,11 +170,11 @@ class MyMessageHandler:
 
     def save_responses(self, chat_id: int, message: str) -> Tuple[str, str]:
         message = message.replace(self.BOT_USERNAME, "", 1).lstrip()
-        instruction = self.instruction_templates["vicunav1_1"]["instruction"]
-        response = self.instruction_templates["vicunav1_1"]["response"]
+        instruction = self.instruction_templates["solar"]["instruction"]
+        response = self.instruction_templates["solar"]["response"]
 
         if chat_id not in self.chat_responses:
-            prompt_start = self.instruction_templates["vicunav1_1"]["prompt_start"]
+            prompt_start = self.instruction_templates["solar"]["prompt_start"]
             prompt = convo = prompt_start + instruction + message + response
         else:
             chat_response = self.chat_responses[chat_id][-8192:]
@@ -152,7 +188,7 @@ class MyMessageHandler:
         )
 
     async def stream_text(self, prompt: str):
-        async for token in self.stream_generator.generate(prompt):
+        async for token in self.stream_generator.generate_stream(prompt):
             yield token
 
     async def handle_edited_message(
@@ -170,18 +206,20 @@ class MyMessageHandler:
 
 
 class StreamGenerator:
-    def __init__(self, backend: str, uri: str, max_new_tokens: int):
+    def __init__(self, backend: str, uri: str, max_new_tokens: int, streaming: bool):
         self.backend = backend
         self.uri = uri
         self.max_new_tokens = max_new_tokens
+        self.streaming = streaming
 
-    async def generate(self, prompt: str):
-        stream = Stream(self.backend, self.uri, self.max_new_tokens)
+    async def generate_stream(self, prompt: str):
+        stream = Stream(self.backend, self.uri, self.max_new_tokens, self.streaming)
 
         if self.backend == "ooba":
             async for token in stream.ooba(prompt):
                 yield token
 
+                yield token
         elif self.backend == "exllama":
             for token in stream.exllama(prompt):
                 yield token

@@ -26,6 +26,7 @@ class Bot:
         debug: bool,
         database_debug: bool,
         codeblock_debug: bool,
+        streaming: bool,
     ):
         self.token = token
         self.backend = backend
@@ -38,6 +39,7 @@ class Bot:
         self.debug = debug
         self.database_debug = database_debug
         self.codeblock_debug = codeblock_debug
+        self.streaming = streaming
 
     def run(self) -> None:
         print("Starting up bot...")
@@ -45,7 +47,10 @@ class Bot:
 
         # Message stream generation
         stream_generator = StreamGenerator(
-            backend=self.backend, uri=self.uri, max_new_tokens=self.max_new_tokens
+            backend=self.backend,
+            uri=self.uri,
+            max_new_tokens=self.max_new_tokens,
+            streaming=self.streaming,
         )
 
         message_handling = MyMessageHandler(
@@ -56,6 +61,7 @@ class Bot:
             database_debug=self.database_debug,
             codeblock_debug=self.codeblock_debug,
             stream_generator=stream_generator,
+            streaming=self.streaming,
         )
 
         # add handlers
@@ -104,7 +110,7 @@ class Bot:
 
         # Error handling
         app.add_error_handler(
-            partial(ErrorHelper.error_handler, mesage_handler=message_handling)
+            partial(ErrorHelper.error_handler, message_handler=message_handling)
         )
 
         # start the bot

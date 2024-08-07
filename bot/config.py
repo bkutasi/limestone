@@ -13,6 +13,7 @@ BOT_USERNAME = config_yaml["bot_username"]
 DEV_ID = config_yaml["developer_id"]
 URI = config_yaml["uri"]
 USERS = config_yaml["allowed_telegram_usernames"]  # if empty all users are allowed
+STREAMING = config_yaml["enable_message_streaming"]
 
 # chat_modes
 with open(config_dir / "chat_personalities.yml", "r", encoding="utf8") as f:
