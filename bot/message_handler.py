@@ -48,10 +48,9 @@ class MyMessageHandler:
     def get_logger(self):
         return self.logger
 
-    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        # Send placeholder message while waiting for the response
-        last_message = await MessageHelper.send_placeholder_message(update)
-
+    async def handle_static_message(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ):
         # Send a typing action while waiting for the response
         await MessageHelper.send_typing_action(update)
 
@@ -219,7 +218,14 @@ class StreamGenerator:
             async for token in stream.ooba(prompt):
                 yield token
 
+        if self.backend == "aphrodite":
+            for token in stream.aphrodite(prompt):
                 yield token
+
+        elif self.backend == "sglang":
+            for token in stream.sglang(prompt):
+                yield token
+
         elif self.backend == "exllama":
             for token in stream.exllama(prompt):
                 yield token
