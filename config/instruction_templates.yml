@@ -9,6 +9,29 @@ vicunav1_1:
   response: "\nASSISTANT:"
 
 solar:
-  prompt_start: "Below is a chat between the User and an Open Source AI Assistant. You are the Assistant Sauerkraut and your job is to answer requests of the user."
-  instruction: "### User:\n"
-  response: "### Assistant:\n"
+  prompt_start: "Below is a chat between the User and you are the Open Source AI Assistant. You are a helpful assistant."
+  instruction: "\n### User:\n"
+  response: "\n### Assistant:\n"
+
+llama3-instruct-default:
+    system_prompt: "You are a helpful assistant."
+    prompt_template: |
+      <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+      {system_prompt}<|eot_id|>
+      <|start_header_id|>user<|end_header_id|>
+      {input}<|eot_id|>
+      <|start_header_id|>assistant<|end_header_id|>
+      {output}
+
+llama3-instruct:
+    system_prompt: "You are a helpful assistant."
+    prompt_template:
+      header: |
+        <|begin_of_text|><|start_header_id|>system<|end_header_id|>
+        {system_prompt}<|eot_id|>
+      user: |
+        <|start_header_id|>user<|end_header_id|>
+        {input}<|eot_id|>
+      output: |
+        <|start_header_id|>assistant<|end_header_id|>
+        {output}
