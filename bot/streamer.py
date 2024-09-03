@@ -102,11 +102,13 @@ class Stream:
         :param prompt: The prompt to use for generating text.
         :return: A generator that yields the generated text.
         """
+        # TODO: implement dynamic stop token
         request = {
             "text": prompt,
             "sampling_params": {
                 "temperature": 1,
-                "max_new_tokens": 256,
+                "max_new_tokens": self.max_new_tokens,
+                "stop": "<|eot_id|>",
             },
             "stream": True,
         }
@@ -122,7 +124,7 @@ class Stream:
                         break
                     data = json.loads(chunk[5:].strip("\n"))
                     output = data["text"].strip()
-                    print(output[prev:], end="", flush=True)
+                    # print(output[prev:], end="", flush=True)
                     if output[prev:]:
                         yield output[prev:]
                     prev = len(output)
