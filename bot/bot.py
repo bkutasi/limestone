@@ -17,6 +17,7 @@ class Bot:
         self,
         token: str,
         backend: str,
+        template: dict,
         uri: str,
         users: list,
         bot_username: str,
@@ -30,6 +31,7 @@ class Bot:
     ):
         self.token = token
         self.backend = backend
+        self.template = template
         self.uri = uri
         self.users = users
         self.bot_username = bot_username
@@ -54,6 +56,7 @@ class Bot:
         )
 
         message_handling = MyMessageHandler(
+            template=self.template,
             instruction_templates=self.instruction_templates,
             BOT_USERNAME=self.bot_username,
             DEV_ID=self.dev_id,

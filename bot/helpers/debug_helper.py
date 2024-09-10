@@ -54,16 +54,16 @@ class DebugHelper:
 
     @staticmethod
     def log_chat_database(
-        chat_id: str, chat_responses: Dict[str, List[str]], database_debug: bool
+        chat_id: str, conversation_memory: Dict[str, List[str]], database_debug: bool
     ) -> None:
         """
         Logs a chat database for a given chat ID.
         :param chat_id: The chat ID of the user.
-        :param chat_responses: A dictionary containing chat responses for each chat ID.
+        :param conversation_memory: A dictionary containing chat responses for each chat ID.
         :param database_debug: A boolean indicating whether to log the database or not.
         """
         if database_debug:
-            print(chat_responses[chat_id] + "\n\n")
+            print(conversation_memory[chat_id] + "\n\n")
 
     @staticmethod
     def inspect_code_blocks(

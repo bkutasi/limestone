@@ -111,9 +111,9 @@ class Commands:
         user_id = update.message.chat.id
 
         # Check if the user has chat history
-        if user_id in message_handling.chat_responses:
+        if user_id in message_handling.conversation_memory:
             # Delete the user's chat history
-            del message_handling.chat_responses[user_id]
+            del message_handling.conversation_memory[user_id]
             print("\nChat history wiped.\n")
             await update.message.reply_text("Your chat history has been wiped.")
         else:

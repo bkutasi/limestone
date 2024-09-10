@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator, Tuple
+from typing import AsyncGenerator, Generator, Tuple, List
 import time
 import logging
 from typing import Dict
@@ -15,11 +15,13 @@ from .helpers.formatting_helper import TextFormatter
 from .streamer import Stream
 from .helpers.debug_helper import DebugHelper
 from .helpers.message_helper import MessageHelper
+from .helpers.prompt_helper import PromptHelper
 
 
 class MyMessageHandler:
     def __init__(
         self,
+        template: Dict,
         instruction_templates: Dict[str, str],
         BOT_USERNAME: str,
         DEV_ID: int,
@@ -29,6 +31,7 @@ class MyMessageHandler:
         stream_generator: Stream = None,
         streaming: bool = False,
     ):
+        self.template = template
         self.debug = debug
         self.DEV_ID = DEV_ID
         self.database_debug = database_debug
@@ -39,7 +42,7 @@ class MyMessageHandler:
         self.BOT_USERNAME = BOT_USERNAME
 
         # Initialized variables that are not passed as arguments
-        self.chat_responses: Dict[int, str] = {}
+        self.conversation_memory: Dict[int, List[Dict[str, str]]] = {}
         self.logger = logging.getLogger(__name__)
 
     def get_dev_id(self):
@@ -51,6 +54,7 @@ class MyMessageHandler:
     async def handle_static_message(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ):
+        # DEPRECATED. DO NOT USE
         # Send a typing action while waiting for the response
         await MessageHelper.send_typing_action(update)
 
@@ -61,7 +65,7 @@ class MyMessageHandler:
         DebugHelper.log_user_message(chat_id, message_type, message, self.debug)
 
         # Save the responses to the database
-        prompt, convo = self.save_responses(chat_id, message)
+        prompt = self.save_responses(chat_id, message)
 
         # Make a generator for the response
         response_generator: AsyncGenerator or Generator = self.stream_text(prompt)
@@ -72,10 +76,12 @@ class MyMessageHandler:
         DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
 
         # First check if the chat_id is already in the database, and save the response
-        self.update_chat_responses(chat_id, convo + response_string)
+        self.update_conversation_memory(chat_id, response_string)
 
         # Print the database to the console for debugging if enabled
-        DebugHelper.log_chat_database(chat_id, self.chat_responses, self.database_debug)
+        DebugHelper.log_chat_database(
+            chat_id, self.conversation_memory, self.database_debug
+        )
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Send placeholder message while waiting for the response
@@ -91,7 +97,17 @@ class MyMessageHandler:
         DebugHelper.log_user_message(chat_id, message_type, message, self.debug)
 
         # Save the user's message to the database
-        prompt, convo = self.save_responses(chat_id, message)
+        # self.save_responses(chat_id, message)
+
+        self.update_conversation_memory(chat_id, message=message)
+
+        prompt = await PromptHelper.generate_prompt(
+            template_name="llama3-instruct",
+            user_input=message,
+            templates=self.instruction_templates,  # Assuming templates are loaded in the class
+            conversation_memory=self.conversation_memory,
+            chat_id=chat_id,
+        )
 
         # Make a generator for the response
         response_generator: AsyncGenerator or Generator = self.stream_text(prompt)
@@ -118,6 +134,7 @@ class MyMessageHandler:
 
                 # If not enough time elapsed, continue caching
                 if time.time() - last_update_time > 0.5:
+                    # the _edit_response_text alters the place holder message with the real output
                     last_message = await self._edit_response_text(
                         context, response_string, last_message
                     )
@@ -132,10 +149,12 @@ class MyMessageHandler:
         DebugHelper.log_response(chat_id, message_type, response_string, self.debug)
 
         # First check if the chat_id is already in the database, and save the response
-        self.update_chat_responses(chat_id, convo + response_string)
+        self.update_conversation_memory(chat_id, response_string=response_string)
 
         # Print the database to the console for debugging if enabled
-        DebugHelper.log_chat_database(chat_id, self.chat_responses, self.database_debug)
+        DebugHelper.log_chat_database(
+            chat_id, self.conversation_memory, self.database_debug
+        )
 
     async def _edit_response_text(
         self, context: str, response_string: str, placeholder_message
@@ -167,24 +186,77 @@ class MyMessageHandler:
         message = update.message.text or ""
         return message_type, chat_id, message
 
-    def save_responses(self, chat_id: int, message: str) -> Tuple[str, str]:
-        message = message.replace(self.BOT_USERNAME, "", 1).lstrip()
-        instruction = self.instruction_templates["solar"]["instruction"]
-        response = self.instruction_templates["solar"]["response"]
+    def save_responses(self, chat_id: int, message: str) -> List[Dict[str, str]]:
+        """
+        Save the user's message to conversation_memory and return the conversation memory.
 
-        if chat_id not in self.chat_responses:
-            prompt_start = self.instruction_templates["solar"]["prompt_start"]
-            prompt = convo = prompt_start + instruction + message + response
-        else:
-            chat_response = self.chat_responses[chat_id][-8192:]
-            prompt = chat_response + instruction + message + response
-            convo = instruction + message + response
-        return prompt, convo
+        Args:
+            chat_id (int): The unique chat ID.
+            message (str): The user's current message.
 
-    def update_chat_responses(self, chat_id, response_string):
-        self.chat_responses[chat_id] = (
-            self.chat_responses.setdefault(chat_id, "") + response_string
+        Returns:
+            str: The constructed prompt to be sent to the model.
+            List[Dict[str, str]]: The conversation memory for the given chat.
+        """
+        # Get previous conversation history for the chat_id, or initialize it if not present
+        conversation_memory = self.conversation_memory.get(chat_id, [])
+
+        # Save the user's message as part of the conversation
+        conversation_memory.append(
+            {
+                "input": f"{message}",
+                "output": "",
+            }
         )
+
+        # Update conversation_memory for this chat_id
+        self.conversation_memory[chat_id] = conversation_memory
+
+    def update_conversation_memory(
+        self,
+        chat_id: int,
+        message: str = None,
+        prompt: str = None,
+        response_string: str = None,
+    ) -> List[Dict[str, str]]:
+        """
+        Manage the conversation memory by saving a user's message and/or updating with the assistant's response.
+
+        Args:
+            chat_id (int): The unique chat ID.
+            message (str, optional): The user's current message to be saved. Defaults to None.
+            response_string (str, optional): The assistant's response to the user's input. Defaults to None.
+
+        Returns:
+            List[Dict[str, str]]: The updated conversation memory for the given chat.
+        """
+        # Get the previous conversation history for the chat_id, or initialize it if not present
+        conversation_memory = self.conversation_memory.get(chat_id, [])
+
+        # keeping the memory implementation since its not needed ATM
+
+        # Save the user's message, if provided
+        if message:
+            conversation_memory.append(
+                {
+                    "input": message,
+                    "output": "",  # Placeholder for the assistant's response
+                }
+            )
+
+        # Update the assistant's response, if provided
+        if response_string:
+            if conversation_memory:
+                # Update the 'output' field of the most recent message
+                conversation_memory[-1]["output"] = response_string
+            else:
+                # If no previous message exists, create a new entry with just the response
+                conversation_memory.append({"input": "", "output": response_string})
+
+        # Update conversation memory for this chat_id
+        self.conversation_memory[chat_id] = conversation_memory
+
+        return conversation_memory
 
     async def stream_text(self, prompt: str):
         async for token in self.stream_generator.generate_stream(prompt):
