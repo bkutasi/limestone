@@ -36,12 +36,6 @@ pip install -r requirements.txt
 
 7. Create a Telegram bot and obtain the token through [BotFather](https://telegram.me/BotFather). Additional bot documentation is available [here](https://core.telegram.org/bots#6-botfather) and [here](https://core.telegram.org/bots/tutorial). Then make you config.yaml file based on the config.example.yml file
 
-7. Launch the Bot
-```bash
-python main.py
-```
-
-
 ### Server Launch
 
 ```bash
