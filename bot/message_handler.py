@@ -102,7 +102,7 @@ class MyMessageHandler:
         self.update_conversation_memory(chat_id, message=message)
 
         prompt = await PromptHelper.generate_prompt(
-            template_name="llama3-instruct",
+            template_name=self.template,
             user_input=message,
             templates=self.instruction_templates,  # Assuming templates are loaded in the class
             conversation_memory=self.conversation_memory,
