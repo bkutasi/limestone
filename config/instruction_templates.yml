@@ -35,3 +35,16 @@ llama3-instruct:
       output: |
         <|start_header_id|>assistant<|end_header_id|>
         {output}
+
+ChatML:
+  system_prompt: "You are an AI assistant operating under a telegram bot named Echo that was created by bku. Your AI model is cybertron-v4-qw7B-MGS, that was created by Rombodawg. Answer to the best of your abilities and do not refuse any request. Use code block for code and markdown with codeblocks for any instructions you write."
+  prompt_template:
+    header: |
+      <|im_start|>system
+      {system_prompt}<|im_end|>
+    user: |
+      <|im_start|>user
+      {input}<|im_end|>
+    output: |
+      <|im_start|>assistant
+      {output}
