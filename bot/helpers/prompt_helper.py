@@ -22,49 +22,50 @@ class PromptHelper:
             chat_id (int): The unique ID of the chat whose conversation memory is being used.
 
         Returns:
-            str: The full prompt to be sent to the language model, including the system prompt,
-                 conversation history, and the current input.
+            str: The full prompt to be sent to the language model.
 
         Raises:
             ValueError: If the specified template name is not found in the templates dictionary.
         """
-
-        # Extract the template from the dictionary
+        # Retrieve the template data for the specified template name
         template_data = templates.get(template_name)
-
-        if template_data:
-            # Extract system prompt and template structure
-            system_prompt = template_data["system_prompt"]
-            prompt_template = template_data["prompt_template"]
-
-            # Get conversation history for the given chat_id
-            chat_conversation = conversation_memory.get(chat_id, [])
-
-            # Start building the prompt from the header
-            header = prompt_template["header"].format(system_prompt=system_prompt)
-
-            # Remake the chat conversation so it adds the fluff around the in/outputs
-            conversation_history = ""
-            for case in chat_conversation:
-                # Process user input
-                formatted_user = prompt_template["user"].format(input=case["input"])
-                # Process assistant output
-                formatted_assistant = prompt_template["output"].format(
-                    output=case["output"]
-                )
-
-                # Add them to conversation history
-                conversation_history += formatted_user + formatted_assistant
-
-            # Now add the current user input with an empty output field for the assistant
-            current_user = prompt_template["user"].format(input=user_input)
-            current_assistant = prompt_template["output"].format(output="")
-
-            # Append the conversation history to the prompt
-            full_prompt = (
-                header + conversation_history + current_user + current_assistant
-            )
-
-            return full_prompt
-        else:
+        if not template_data:
             raise ValueError(f"Template '{template_name}' not found.")
+
+        # Extract the system prompt and prompt template from the template data
+        system_prompt = template_data["system_prompt"]
+        prompt_template = template_data["prompt_template"]
+
+        # Initialize the messages list with the system prompt
+        messages = [{"role": "system", "content": system_prompt}]
+
+        # Retrieve the conversation history for the given chat_id
+        chat_conversation = conversation_memory.get(chat_id, [])
+
+        # Add each message from the conversation history to the messages list
+        for case in chat_conversation:
+            messages.append({"role": "user", "content": case["input"]})
+            messages.append({"role": "assistant", "content": case["output"]})
+
+        # Check if the current user input is already in the conversation history
+        if not chat_conversation or chat_conversation[-1]["input"] != user_input:
+            # Add the current user input to the messages list only if it's not already there
+            messages.append({"role": "user", "content": user_input})
+            # Add an empty assistant message to prompt for a response
+            messages.append({"role": "assistant", "content": ""})
+
+        # Generate the full prompt by applying the appropriate template to each message
+        full_prompt = ""
+        for message in messages:
+            role = message["role"]
+            content = message["content"]
+
+            # Apply the correct template based on the message role
+            if role == "system":
+                full_prompt += prompt_template["header"].format(system_prompt=content)
+            elif role == "user":
+                full_prompt += prompt_template["user"].format(input=content)
+            elif role == "assistant":
+                full_prompt += prompt_template["output"].format(output=content)
+
+        return full_prompt
