@@ -1,38 +1,18 @@
+# Enviorment
 env
-__pycache__/credentials.cpython-39.pyc
-__pycache__/credentials.cpython-311.pyc
-__pycache__/mdconvert.cpython-311.pyc
-__pycache__/server.cpython-39.pyc
-bot/__pycache__/config.cpython-311.pyc
-bot/__pycache__/credentials.cpython-311.pyc
-bot/__pycache__/mdconvert.cpython-311.pyc
-bot/__pycache__/config.cpython-310.pyc
-.gitignore
-bot/__pycache__/mdconvert.cpython-310.pyc
-.gitignore
-bot/__pycache__/streaming.cpython-310.pyc
+
+# Cache files
+__pycache__
+.pytest_cache
+bot/__pycachve__
+bot/helpers/__pycache__
+tests/__pycache__
+
+# Config files
 config/config.yml
-.vscode/settings.json
-bot/__pycache__/__init__.cpython-310.pyc
-bot/__pycache__/bot.cpython-310.pyc
-bot/__pycache__/command_handler.cpython-310.pyc
-bot/__pycache__/debug_helper.cpython-310.pyc
-bot/__pycache__/formatting_helper.cpython-310.pyc
-bot/__pycache__/message_handler.cpython-310.pyc
-bot/__pycache__/streamer.cpython-310.pyc
-.gitignore
-bot/helpers/__pycache__/__init__.cpython-310.pyc
-bot/helpers/__pycache__/debug_helper.cpython-310.pyc
-bot/helpers/__pycache__/error_helper.cpython-310.pyc
-bot/helpers/__pycache__/formatting_helper.cpython-310.pyc
-bot/helpers/__pycache__/message_helper.cpython-310.pyc
-bot/helpers/__pycache__/message_helper.cpython-310.pyc
+.vscode
+
+# Testing trials
 tests/connection_test.py
-tests/__pycache__/connection_test.cpython-310.pyc
-.gitignore
-.gitignore
-tests/__pycache__/__init__.cpython-310.pyc
-__pycache__/__init__.cpython-310.pyc
-tests/__pycache__/connection_test.cpython-310-pytest-7.3.1.pyc
-tests/__pycache__/stream_test.cpython-310.pyc
-bot/helpers/__pycache__/a.pyc
+
+
