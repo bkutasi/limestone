@@ -96,7 +96,7 @@ class TextFormatter:
         """
 
         # List of characters to escape
-        chars_to_escape = r"_*~#+-={}!.|()<>[]"
+        chars_to_escape = r"\_*~#+-={}!.|()<>[]"
 
         # Escape characters in code blocks
         text = TextFormatter.escape_code_blocks(text)
