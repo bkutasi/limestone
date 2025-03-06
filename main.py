@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 # Get the logger for httpx and set its level to WARNING
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.WARNING)
-openai_logger = logging.getLogger("openai")
-openai_logger.setLevel(logging.DEBUG)
+openai_logger = logging.getLogger("bot.message_handler")
+openai_logger.setLevel(logging.WARNING)
+
 
 # Run the program
 if __name__ == "__main__":

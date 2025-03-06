@@ -47,21 +47,12 @@ class Bot:
         logger.info("Starting up bot...")
         app = ApplicationBuilder().token(self.token).concurrent_updates(True).build()
 
-        # Message stream generation
-        stream_generator = StreamGenerator(
-            backend=self.backend,
-            uri=self.uri,
-            model=self.model,
-            max_new_tokens=self.max_new_tokens,
-            streaming=self.streaming,
-        )
-
         self.message_handling = MyMessageHandler(
             template=self.template,
             instruction_templates=self.instruction_templates,
             BOT_USERNAME=self.bot_username,
             DEV_ID=self.dev_id,
-            stream_generator=stream_generator,
+            backend=self.backend,
             streaming=self.streaming,
             URI=self.uri,
             MODEL=self.model,
@@ -84,7 +75,8 @@ class Bot:
             CommandHandler(
                 "wipe",
                 partial(
-                    Commands.wipe_history_command, message_handling=self.message_handling
+                    Commands.wipe_history_command,
+                    message_handling=self.message_handling,
                 ),
             )
         )

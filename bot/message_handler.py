@@ -3,6 +3,7 @@ import time
 import logging
 import openai
 import datetime
+from g4f.client import AsyncClient
 from typing import Dict
 from telegram import Update, Message
 
@@ -30,21 +31,24 @@ class MyMessageHandler:
         DEV_ID: int,
         MODEL: str,
         URI: str,
-        stream_generator: Stream = None,
-        streaming: bool = False,
+        backend: str,
+        streaming: bool = True,
         api_key: Optional[str] = "0",
     ):
         self.template = template
         self.DEV_ID = DEV_ID
-        self.stream_generator = stream_generator
         self.instruction_templates = instruction_templates
         self.streaming = streaming
         self.BOT_USERNAME = BOT_USERNAME
         self.MODEL = MODEL
         self.URI = URI
+        self.backend = backend
 
-        # Initialize OpanAI compatible client
-        self.client = openai.OpenAI(base_url=URI, api_key=api_key)
+        # Initialize OpenAI compatible client
+        if self.backend:
+            self.client = openai.OpenAI(base_url=URI, api_key=api_key)
+        else:
+            self.client = AsyncClient()
 
         # Memory: each int is a userID which contains a list of dicts
         self.conversation_memory: Dict[int, List[Dict[str, str]]] = {}
@@ -55,7 +59,10 @@ class MyMessageHandler:
         """Update API client with new settings"""
         self.URI = uri
         self.MODEL = model
-        self.client = openai.OpenAI(base_url=uri, api_key="0")  # Reinitialize client
+        if self.backend:
+            self.client = openai.OpenAI(base_url=uri, api_key="0")
+        else:
+            self.client = AsyncClient()
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Send placeholder message while waiting for the response
@@ -72,14 +79,11 @@ class MyMessageHandler:
 
         self.update_conversation_memory(chat_id, message=message)
 
-        response_generator = self.client.chat.completions.create(
+        response_generator: AsyncGenerator = self.client.chat.completions.create(
             model=self.MODEL,
             messages=self.conversation_memory[chat_id]["messages"],
-            stream=True,
+            stream=self.streaming,
         )
-
-        # Make a generator for the response
-        # response_generator: AsyncGenerator = self.stream_text(messages)
 
         # Make a string placeholder for the final response
         response_string: str = ""
@@ -89,7 +93,7 @@ class MyMessageHandler:
         last_update_time: float = time.time()
 
         # Iterate through the generator and send the response
-        for chunk in response_generator:
+        async for chunk in response_generator:
             response = chunk.choices[0].delta.content or ""
             if not self.streaming:
                 response_string = response
@@ -183,7 +187,7 @@ class MyMessageHandler:
 
             # Extract the system prompt and prompt template from the template data
             system_prompt = template_data["system_prompt"]
-            
+
             self.conversation_memory[chat_id] = {
                 "messages": [{"role": "system", "content": system_prompt}],
                 "metadata": {
@@ -208,10 +212,6 @@ class MyMessageHandler:
             else:
                 # Append new assistant message after user input
                 messages.append({"role": "assistant", "content": response_string})
-
-    async def stream_text(self, prompt: str):
-        async for token in self.stream_generator.generate_stream(prompt):
-            yield token
 
     async def handle_edited_message(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
