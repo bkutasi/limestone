@@ -9,6 +9,9 @@ from telegram.constants import (
 from .helpers.formatting_helper import TextFormatter
 from .message_handler import MyMessageHandler
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class Commands:
     """
@@ -43,13 +46,7 @@ class Commands:
         """
         if update.message:
             text = "You have pressed the `/start` command."
-            print(
-                text,
-                "\n",
-                TextFormatter.has_open_code_block(text),
-                "\n",
-                TextFormatter.has_open_inline_code(text),
-            )
+            logger.debug(f"Start command output: text={text}, has_code_block={TextFormatter.has_open_code_block(text)}, has_inline_code={TextFormatter.has_open_inline_code(text)}")
             await update.message.reply_text(
                 TextFormatter.escape(text), parse_mode=ParseMode.MARKDOWN_V2
             )
@@ -114,7 +111,7 @@ class Commands:
         if user_id in message_handling.conversation_memory:
             # Delete the user's chat history
             del message_handling.conversation_memory[user_id]
-            print("\nChat history wiped.\n")
+            logger.info("Chat history wiped.")
             await update.message.reply_text("Your chat history has been wiped.")
         else:
             await update.message.reply_text("You have no chat history to wipe.")

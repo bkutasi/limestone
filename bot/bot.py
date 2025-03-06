@@ -7,6 +7,10 @@ from telegram.ext import (
     filters,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from .message_handler import MyMessageHandler, StreamGenerator
 from .command_handler import Commands
 from .helpers.error_helper import ErrorHelper
@@ -19,14 +23,12 @@ class Bot:
         backend: str,
         template: dict,
         uri: str,
+        model: str,
         users: list,
         bot_username: str,
         dev_id: str,
         instruction_templates: dict,
         max_new_tokens: int,
-        debug: bool,
-        database_debug: bool,
-        codeblock_debug: bool,
         streaming: bool,
     ):
         self.token = token
@@ -38,33 +40,31 @@ class Bot:
         self.dev_id = dev_id
         self.instruction_templates = instruction_templates
         self.max_new_tokens = max_new_tokens
-        self.debug = debug
-        self.database_debug = database_debug
-        self.codeblock_debug = codeblock_debug
         self.streaming = streaming
+        self.model = model
 
     def run(self) -> None:
-        print("Starting up bot...")
+        logger.info("Starting up bot...")
         app = ApplicationBuilder().token(self.token).concurrent_updates(True).build()
 
         # Message stream generation
         stream_generator = StreamGenerator(
             backend=self.backend,
             uri=self.uri,
+            model=self.model,
             max_new_tokens=self.max_new_tokens,
             streaming=self.streaming,
         )
 
-        message_handling = MyMessageHandler(
+        self.message_handling = MyMessageHandler(
             template=self.template,
             instruction_templates=self.instruction_templates,
             BOT_USERNAME=self.bot_username,
             DEV_ID=self.dev_id,
-            debug=self.debug,
-            database_debug=self.database_debug,
-            codeblock_debug=self.codeblock_debug,
             stream_generator=stream_generator,
             streaming=self.streaming,
+            URI=self.uri,
+            MODEL=self.model,
         )
 
         # add handlers
@@ -84,7 +84,7 @@ class Bot:
             CommandHandler(
                 "wipe",
                 partial(
-                    Commands.wipe_history_command, message_handling=message_handling
+                    Commands.wipe_history_command, message_handling=self.message_handling
                 ),
             )
         )
@@ -96,7 +96,7 @@ class Bot:
                 & ~filters.COMMAND
                 & user_filter
                 & filters.UpdateType.MESSAGE,
-                message_handling.handle_message,
+                self.message_handling.handle_message,
             )
         )
 
@@ -107,15 +107,15 @@ class Bot:
                 & ~filters.COMMAND
                 & user_filter
                 & filters.UpdateType.EDITED_MESSAGE,
-                message_handling.handle_edited_message,
+                self.message_handling.handle_edited_message,
             )
         )
 
         # Error handling
         app.add_error_handler(
-            partial(ErrorHelper.error_handler, message_handler=message_handling)
+            partial(ErrorHelper.error_handler, message_handler=self.message_handling)
         )
 
         # start the bot
-        print("Pooling...")
+        logger.info("Pooling...")
         app.run_polling()
