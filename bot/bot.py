@@ -11,7 +11,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from .message_handler import MyMessageHandler, StreamGenerator
+from .message_handler import MyMessageHandler
 from .command_handler import Commands
 from .helpers.error_helper import ErrorHelper
 

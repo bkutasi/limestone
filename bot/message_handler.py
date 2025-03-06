@@ -18,7 +18,6 @@ from telegram.constants import (
 )
 
 from .helpers.formatting_helper import TextFormatter
-from .streamer import Stream
 from .helpers.message_helper import MessageHelper
 
 
@@ -227,23 +226,3 @@ class MyMessageHandler:
         await update.edited_message.reply_text(
             "Message edited, currently I dont support this feature."
         )
-
-
-class StreamGenerator:
-    def __init__(
-        self, backend: str, uri: str, max_new_tokens: int, model: str, streaming: bool
-    ):
-        self.backend = backend
-        self.uri = uri
-        self.model = model
-        self.max_new_tokens = max_new_tokens
-        self.streaming = streaming
-
-    async def generate_stream(self, prompt: str):
-        stream = Stream(
-            self.backend, self.uri, self.max_new_tokens, self.model, self.streaming
-        )
-
-        if self.backend == "openai":
-            for token in stream.openai(prompt):
-                yield token
