@@ -18,3 +18,4 @@ tests/connection_test.py
 # Development logs
 development_log.md
 uncompressed_output.txt
+/logs

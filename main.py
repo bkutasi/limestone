@@ -14,19 +14,12 @@ from bot.config import (
 from bot.config_watcher import ConfigWatcher
 import logging
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,  # Set default logging level to WARNING
-    format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
+from bot.logging_watcher import LoggingWatcher
 
-# Get the logger for httpx and set its level to WARNING
-httpx_logger = logging.getLogger("httpx")
-httpx_logger.setLevel(logging.WARNING)
-openai_logger = logging.getLogger("bot.message_handler")
-openai_logger.setLevel(logging.WARNING)
+# Initialize logging system
+logging_watcher = LoggingWatcher()
+logging_watcher.start()
+logger = logging.getLogger(__name__)
 
 
 # Run the program
