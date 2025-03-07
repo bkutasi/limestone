@@ -10,7 +10,7 @@ Limestone is a personalized and highly customizable Telegram bot that allows you
 
 ## Project Overview
 
-This project aims to provide an accessible way to interact with GPT-based Language Models. By utilizing Telegram as a frontend, we ensure secure messaging and protect user data from potential leaks. The project enables users to run their Language Models privately and securely as long as you trust Telegram as a platform.
+Limestone offers a secure and accessible way to interact with Large Language Models (LLMs) through Telegram. This project allows users to run their LLMs locally or in the cloud, provided they trust the Telegram platform.
 
 ## Getting Started
 
@@ -27,8 +27,7 @@ git clone https://github.com/bkutasi/limestone
 3.  Create a new virtual environment (Python 3.13)
 
 ```bash	
-pyton -m venv env
-source env/bin/activate
+pyton -m venv env && source env/bin/activate
 ```
 
 4.  Install required packages
@@ -49,17 +48,11 @@ Note: Server-side encryption is not implemented. Not recommended for production 
 
 ## Logging
 
-Limestone uses the Python `logging` module to provide detailed information about the bot's operation. Understanding the different log levels can help you debug issues or monitor the bot's activity.
+Limestone uses Python's `logging` module for detailed operational information. Understanding log levels helps in debugging and monitoring.
 
-**Log Levels:**
+**Log Levels:** `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
 
-**DEBUG** | **INFO** | **WARNING** | **ERROR** | **CRITICAL** 
-
-**Adjusting the Log Level:**
-
-The default log level is set to `INFO` to reduce excessive logging.
-
-Specifically, the `httpx` logger has is levels set to `WARNING` to filter out the verbose `INFO` level HTTP request logs.
+The default log level is `INFO`. The `httpx` logger is set to `WARNING` to filter verbose HTTP request logs.
 
 ## Supported Models
 
