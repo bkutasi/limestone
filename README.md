@@ -65,6 +65,51 @@ Specifically, the `httpx` logger has is levels set to `WARNING` to filter out th
 
 For models, pick your choice form [Open LLM leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)
 
+## Architecture
+
+```mermaid
+%% Limestone Chatbot Architecture Diagram - Dark Theme
+graph TD
+    subgraph Telegram Ecosystem
+        A[Telegram Client] -->|Send Message| B(Telegram API)
+        B -->|Update| C[Bot Application]
+        C -->|Response| B
+    end
+
+    subgraph "Limestone Core (main.py)"
+        C -->|Command| D[Command Handler]
+        C -->|Message| E[Message Handler]
+        E -->|Generate Response| F[LLM Client]
+        E -->|Update History| G[(Conversation Memory)]
+    end
+
+    subgraph ExternalServices
+        F -->|API Call| H[(LLM Backend)]
+        H -->|Streaming Response| F
+    end
+
+    subgraph Configuration
+        I -->|Reload Config| C
+        K -->|Reload Logging config| C
+        K[Logging Watcher] -->|Monitor| J[logging.yml]
+        I[Config Watcher] -->|Monitor| L[config.yml]
+    end
+
+    subgraph Helpers
+        E --> M[Error Helper]
+        E --> N[Formatting Helper]
+        E --> O[Message Helper]
+        D --> M
+    end
+
+    %% Dark Theme Styles
+    style ExternalServices fill:#455a64,stroke:#b0bec5
+    style Configuration fill:#263238,stroke:#b0bec5
+    style Helpers fill:#37474f,stroke:#b0bec5
+    classDef component fill:#424242,stroke:#b0bec5,color:#fff;
+    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O component
+```
+
 ## Development Roadmap
 
 ### Short Term
