@@ -56,8 +56,8 @@ class MyMessageHandler:
 
     def update_client_settings(self, uri: str, model: str):
         """Update API client with new settings"""
-        self.URI = uri
-        self.MODEL = model
+        self.URI: str = uri
+        self.MODEL: str = model
         if self.backend:
             self.client = openai.OpenAI(base_url=uri, api_key="0")
         else:
@@ -200,11 +200,11 @@ class MyMessageHandler:
         messages = self.conversation_memory[chat_id]["messages"]
 
         # Add user message (always append as a new entry)
-        if message is not None:
+        if message:
             messages.append({"role": "user", "content": message})
 
         # Handle assistant response (append new or update last entry for streaming)
-        if response_string is not None:
+        if response_string:
             if messages and messages[-1]["role"] == "assistant":
                 # Update existing assistant message (streaming use case)
                 messages[-1]["content"] = response_string
