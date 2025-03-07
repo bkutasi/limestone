@@ -15,7 +15,8 @@ config/config.yml
 # Testing trials
 tests/connection_test.py
 
-# Development logs
+# Development files
 development_log.md
 uncompressed_output.txt
 /logs
+compressed_output.txt
