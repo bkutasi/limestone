@@ -10,6 +10,7 @@ from .helpers.formatting_helper import TextFormatter
 from .message_handler import MyMessageHandler
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,7 +47,9 @@ class Commands:
         """
         if update.message:
             text = "You have pressed the `/start` command."
-            logger.debug(f"Start command output: text={text}, has_code_block={TextFormatter.has_open_code_block(text)}, has_inline_code={TextFormatter.has_open_inline_code(text)}")
+            logger.debug(
+                f"Start command output: text={text}, has_code_block={TextFormatter.has_open_code_block(text)}, has_inline_code={TextFormatter.has_open_inline_code(text)}"
+            )
             await update.message.reply_text(
                 TextFormatter.escape(text), parse_mode=ParseMode.MARKDOWN_V2
             )

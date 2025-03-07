@@ -17,10 +17,12 @@ MODEL = config_yaml["model"]
 USERS = config_yaml["allowed_telegram_usernames"]  # if empty all users are allowed
 STREAMING = config_yaml["enable_message_streaming"]
 
+
 def reload_config():
     """Reload configuration from file"""
     with open(config_dir / "config.yml", "r") as f:
         return yaml.safe_load(f)
+
 
 # chat_modes
 with open(config_dir / "chat_personalities.yml", "r", encoding="utf8") as f:

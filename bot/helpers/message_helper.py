@@ -1,6 +1,7 @@
 from telegram import Update, Message
 from typing import Tuple
 
+
 class MessageHelper:
     """
     A helper class for sending basic messages and actions in a chat.

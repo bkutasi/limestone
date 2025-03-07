@@ -7,8 +7,6 @@ from g4f.client import AsyncClient
 from typing import Dict
 from telegram import Update, Message
 
-logger = logging.getLogger(__name__)
-
 from telegram.ext import (
     ContextTypes,
 )
@@ -20,6 +18,7 @@ from telegram.constants import (
 from .helpers.formatting_helper import TextFormatter
 from .helpers.message_helper import MessageHelper
 
+logger = logging.getLogger(__name__)
 
 class MyMessageHandler:
     def __init__(
@@ -179,7 +178,6 @@ class MyMessageHandler:
         """
         # Initialize conversation memory for this chat_id if it doesn't exist
         if chat_id not in self.conversation_memory:
-
             template_data = self.instruction_templates.get(self.template)
             if not template_data:
                 raise ValueError(f"Template '{self.template}' not found.")

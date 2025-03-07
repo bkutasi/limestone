@@ -9,12 +9,11 @@ from telegram.ext import (
 
 import logging
 
-logger = logging.getLogger(__name__)
-
 from .message_handler import MyMessageHandler
 from .command_handler import Commands
 from .helpers.error_helper import ErrorHelper
 
+logger = logging.getLogger(__name__)
 
 class Bot:
     def __init__(

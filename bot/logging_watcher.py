@@ -8,6 +8,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+
 class LoggingConfigHandler(FileSystemEventHandler):
     def __init__(self):
         self.last_modified = time.time()
@@ -30,6 +31,7 @@ class LoggingConfigHandler(FileSystemEventHandler):
         with open(self.config_path) as f:
             config = yaml.safe_load(f)
             logging.config.dictConfig(config)
+
 
 class LoggingWatcher:
     def __init__(self):
